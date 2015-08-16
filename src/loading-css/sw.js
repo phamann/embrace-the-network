@@ -30,7 +30,9 @@ self.addEventListener('fetch', function(event) {
                             });
                         });
                         // Cache new copy
-                        cache.put(event.request, response.clone());
+                        if(response.status === 200) {
+                            cache.put(event.request, response.clone());
+                        }
                         return response;
                     });
                 })

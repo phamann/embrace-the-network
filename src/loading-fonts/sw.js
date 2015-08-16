@@ -25,9 +25,15 @@ self.addEventListener('fetch', function(event) {
                     return response || fetch(event.request).then(function(response) {
                         // Was first request for font
                         // Cache for subsquent page load
-                        cache.put(event.request, response.clone());
+                        if (response.status == 200) {
+                            cache.put(event.request, response.clone());
+                        }
                         // Fail fast
-                        return Response().error();
+                        // Return no content avaliable.
+                        return new Response('', {
+                            status: 204,
+                            statusText: 'No cached content available.'
+                        });
                     });
                 })
             );
