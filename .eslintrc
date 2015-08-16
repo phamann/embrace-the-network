@@ -1,0 +1,10 @@
+{
+    extends: "eslint-config-standard",
+    env: {
+        browser: true,
+    },
+    globals: {
+        document: true,
+        window: true
+    }
+}
