@@ -1,0 +1,16 @@
+{% extends '../templates/layout.html' %}
+
+{% block title %}Stale-on-error{% endblock %}
+
+{% block head %}
+    {% parent %}
+    <link rel="stylesheet" href="css/main.css" />
+{% endblock %}
+
+{% block content %}
+<pre><code class="language-javascript">{{ source }}</code></pre>
+{% endblock %}
+
+{% block scripts %}
+<script async src="js/main.js"></script>
+{% endblock %}

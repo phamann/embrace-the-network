@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Circuit breakers</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        
+        <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.blue_grey-pink.min.css" />
+        <script src="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.min.js"></script>
+        <link rel="stylesheet" href="/css/main.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"  rel="stylesheet">
+        <link href="/css/prism.css" rel="stylesheet" />
+        
+    </head>
+    <body>
+
+        <div class="mdl-layout mdl-js-layout  mdl-layout--fixed-header">
+
+            <header class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <span class="mdl-layout-title">Circuit breakers</span>
+                    <div class="mdl-layout-spacer"></div>
+                </div>
+            </header>
+            <div class="mdl-layout__drawer">
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/">Home</a>
+                </nav>
+                <span class="mdl-layout-title">ServiceWorker</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/loading-css/">Loading CSS</a>
+                    <a class="mdl-navigation__link" href="/loading-fonts/">Loading fonts</a>
+                    <a class="mdl-navigation__link" href="/timeouts/">Handling timeouts</a>
+                    <a class="mdl-navigation__link" href="/circuit-breakers/">Circuit breakers</a>
+                    <a class="mdl-navigation__link" href="/stale-on-error/">Stale on error</a>
+                    <a class="mdl-navigation__link" href="/message-queues/">Message queues</a>
+                </nav>
+                <span class="mdl-layout-title">Workers</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/web-worker">Multi-threaded processing</a>
+                </nav>
+          </div>
+            <main class="mdl-layout__content">
+            <div class="page-content">
+                
+<pre><code class="language-javascript">var version = 1;
+
+self.addEventListener(&#39;install&#39;, function(event) {
+    self.skipWaiting();
+});
+
+self.addEventListener(&#39;activate&#39;, function(event) {
+    if (self.clients &amp;&amp; clients.claim) {
+        clients.claim();
+    }
+});
+
+importScripts(&#39;js/circuit-breaker.js&#39;);
+
+CircuitBreaker.prototype.fetch = function(request) {
+    var unavailableResponse = Response.error();
+
+    return new Promise(function(resolve, reject) {
+        this.run(function(success, fail) {
+            fetch(request).then(function(response) {
+                if(response.status &lt; 400) {
+                    success();
+                } else {
+                    fail();
+                }
+                resolve(response);
+            })
+            .catch(function(err) {
+                fail();
+                reject(unavailableResponse);
+            });
+        }, function() {
+            resolve(unavailableResponse);
+        });
+    }.bind(this));
+};
+
+var circuitBreakers = {};
+var options = {
+    windowDuraion: 1000,
+    timeoutDuration: 3000,
+    errorThreshold: 50,
+    volumeThrehold: 2
+};
+
+self.addEventListener(&#39;fetch&#39;, function(event) {
+    var url = event.request.url;
+
+    if(!circuitBreakers[url]) {
+        circuitBreakers[url] = new CircuitBreaker(options);
+    }
+
+    event.respondWith(
+        circuitBreakers[url].fetch(event.request)
+    );
+});
+</code></pre>
+
+            </div>
+            </main>
+        </div>
+
+        
+<script async src="js/main.js"></script>
+
+        <script async src="/js/prism.js"></script>
+    </body>
+</html>
+
+
+
+

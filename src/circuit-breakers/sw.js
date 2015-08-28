@@ -12,23 +12,10 @@ self.addEventListener('activate', function(event) {
 
 importScripts('js/circuit-breaker.js');
 
-var circuitBreakers = {};
-var options = {
-    windowDuraion: 1000,
-    numBucket: 1,
-    timeoutDuration: 3000,
-    errorThreshold: 50,
-    volumeThrehold: 1
-};
-
 CircuitBreaker.prototype.fetch = function(request) {
-    var msg = 'Service unavailable: circuit broken.';
-    var unavailableResponse = new Response(msg, {
-        status: 503,
-        statusText: msg
-    });
+    var unavailableResponse = Response.error();
 
-    return new Promise(function(resolve, reject){
+    return new Promise(function(resolve, reject) {
         this.run(function(success, fail) {
             fetch(request).then(function(response) {
                 if(response.status < 400) {
@@ -48,6 +35,14 @@ CircuitBreaker.prototype.fetch = function(request) {
     }.bind(this));
 };
 
+var circuitBreakers = {};
+var options = {
+    windowDuraion: 1000,
+    timeoutDuration: 3000,
+    errorThreshold: 50,
+    volumeThrehold: 2
+};
+
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
 
@@ -55,7 +50,5 @@ self.addEventListener('fetch', function(event) {
         circuitBreakers[url] = new CircuitBreaker(options);
     }
 
-    event.respondWith(
-        circuitBreakers[url].fetch(event.request)
-    );
+    event.respondWith(circuitBreakers[url].fetch(event.request));
 });

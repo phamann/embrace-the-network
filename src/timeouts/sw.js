@@ -11,8 +11,8 @@ self.addEventListener('activate', function(event) {
 });
 
 function timeout(delay) {
-    return new Promise(function(resolve, reject){
-        setTimeout(function(){
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
             resolve(new Response('', {
                 status: 408,
                 statusText: 'Request timed out.'
@@ -23,10 +23,5 @@ function timeout(delay) {
 
 self.addEventListener('fetch', function(event) {
     // Attempt to fetch with timeout
-    event.respondWith(
-        Promise.race([
-            timeout(2000),
-            fetch(event.request)
-        ])
-    );
+    event.respondWith(Promise.race([timeout(2000), fetch(event.request)]));
 });

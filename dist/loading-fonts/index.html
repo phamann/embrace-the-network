@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Loading Fonts</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        
+    
+        <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.blue_grey-pink.min.css" />
+        <script src="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.min.js"></script>
+        <link rel="stylesheet" href="/css/main.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"  rel="stylesheet">
+        <link href="/css/prism.css" rel="stylesheet" />
+        
+    <link rel="stylesheet" href="css/main.css" />
+
+    </head>
+    <body>
+
+        <div class="mdl-layout mdl-js-layout  mdl-layout--fixed-header">
+
+            <header class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <span class="mdl-layout-title">Loading Fonts</span>
+                    <div class="mdl-layout-spacer"></div>
+                </div>
+            </header>
+            <div class="mdl-layout__drawer">
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/">Home</a>
+                </nav>
+                <span class="mdl-layout-title">ServiceWorker</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/loading-css/">Loading CSS</a>
+                    <a class="mdl-navigation__link" href="/loading-fonts/">Loading fonts</a>
+                    <a class="mdl-navigation__link" href="/timeouts/">Handling timeouts</a>
+                    <a class="mdl-navigation__link" href="/circuit-breakers/">Circuit breakers</a>
+                    <a class="mdl-navigation__link" href="/stale-on-error/">Stale on error</a>
+                    <a class="mdl-navigation__link" href="/message-queues/">Message queues</a>
+                </nav>
+                <span class="mdl-layout-title">Workers</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/web-worker">Multi-threaded processing</a>
+                </nav>
+          </div>
+            <main class="mdl-layout__content">
+            <div class="page-content">
+                
+<pre><code class="language-javascript">var version = 1;
+var cacheName = &#39;static-&#39; + version;
+
+self.addEventListener(&#39;install&#39;, function(event) {
+    self.skipWaiting();
+});
+
+self.addEventListener(&#39;activate&#39;, function(event) {
+    if (self.clients &amp;&amp; clients.claim) {
+        clients.claim();
+    }
+});
+
+function isFontRequest(request) {
+    return /fonts\//.test(request.url);
+}
+
+self.addEventListener(&#39;fetch&#39;, function(event) {
+    // If this is a request for font file
+    if (isFontRequest(event.request)) {
+        caches.open(cacheName).then(function(cache) {
+            // Respond with cached copy or fetch and cache
+            event.respondWith(
+                cache.match(event.request).then(function(response) {
+                    return response || fetch(event.request).then(function(response) {
+                        // Was first request for font
+                        // Cache for subsquent page load
+                        if (response.status == 200) {
+                            cache.put(event.request, response.clone());
+                        }
+                        // Fail fast
+                        // Return no content avaliable.
+                        return new Response(&#39;&#39;, {
+                            status: 204,
+                            statusText: &#39;No cached content available.&#39;
+                        });
+                    });
+                })
+            );
+        });
+    }
+});
+</code></pre>
+
+            </div>
+            </main>
+        </div>
+
+        
+<script async src="js/main.js"></script>
+
+        <script async src="/js/prism.js"></script>
+    </body>
+</html>
+
+
+
+

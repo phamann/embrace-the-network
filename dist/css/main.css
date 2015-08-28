@@ -1,0 +1,43 @@
+.is-small-screen .title {
+  padding-left: 20px; }
+
+.content {
+  padding: 40px;
+  display: inline-block;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box; }
+  .content .is-small-screen {
+    padding: 20px; }
+
+.toc {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto; }
+
+.toc__header {
+  display: table-cell;
+  width: 140px;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding-right: 60px;
+  line-height: 25px; }
+  .is-small-screen .toc__header {
+    display: block; }
+
+.toc__content {
+  display: table-cell; }
+
+.toc__links {
+  list-style: none;
+  border-left: solid 3px #ffd9e6;
+  padding-left: 20px;
+  line-height: 28px; }
+
+.toc__link {
+  position: relative;
+  font-size: 16px;
+  list-style: none; }
+  .toc__link a {
+    text-decoration: none; }

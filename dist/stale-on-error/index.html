@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Stale-on-error</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        
+    
+        <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.blue_grey-pink.min.css" />
+        <script src="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.min.js"></script>
+        <link rel="stylesheet" href="/css/main.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"  rel="stylesheet">
+        <link href="/css/prism.css" rel="stylesheet" />
+        
+    <link rel="stylesheet" href="css/main.css" />
+
+    </head>
+    <body>
+
+        <div class="mdl-layout mdl-js-layout  mdl-layout--fixed-header">
+
+            <header class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <span class="mdl-layout-title">Stale-on-error</span>
+                    <div class="mdl-layout-spacer"></div>
+                </div>
+            </header>
+            <div class="mdl-layout__drawer">
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/">Home</a>
+                </nav>
+                <span class="mdl-layout-title">ServiceWorker</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/loading-css/">Loading CSS</a>
+                    <a class="mdl-navigation__link" href="/loading-fonts/">Loading fonts</a>
+                    <a class="mdl-navigation__link" href="/timeouts/">Handling timeouts</a>
+                    <a class="mdl-navigation__link" href="/circuit-breakers/">Circuit breakers</a>
+                    <a class="mdl-navigation__link" href="/stale-on-error/">Stale on error</a>
+                    <a class="mdl-navigation__link" href="/message-queues/">Message queues</a>
+                </nav>
+                <span class="mdl-layout-title">Workers</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/web-worker">Multi-threaded processing</a>
+                </nav>
+          </div>
+            <main class="mdl-layout__content">
+            <div class="page-content">
+                
+<pre><code class="language-javascript">var version = 1;
+var cacheName = &#39;stale-&#39; + version;
+
+self.addEventListener(&#39;install&#39;, function(event) {
+    self.skipWaiting();
+});
+
+self.addEventListener(&#39;activate&#39;, function(event) {
+    if (self.clients &amp;&amp; clients.claim) {
+        clients.claim();
+    }
+});
+
+self.addEventListener(&#39;fetch&#39;, function(event) {
+    // Always fetch response from the network
+    event.respondWith(
+        fetch(event.request).then(function(response) {
+            caches.open(cacheName).then(function(cache) {
+                // If we received an error response
+                if(response.status &gt;= 500) {
+                    cache.match(event.request).then(function(response) {
+                        // Return stale version from cache
+                        return response;
+                    }).catch(function() {
+                        // No stale version in cache so return network response
+                        return response;
+                    });
+                } else {
+                    // Response was healthy so update cached version
+                    cache.put(event.request, response.clone());
+                    return response;
+                }
+            });
+        })
+    );
+});
+</code></pre>
+
+            </div>
+            </main>
+        </div>
+
+        
+<script async src="js/main.js"></script>
+
+        <script async src="/js/prism.js"></script>
+    </body>
+</html>
+
+
+
+
